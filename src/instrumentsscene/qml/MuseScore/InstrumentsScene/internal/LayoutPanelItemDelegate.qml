@@ -81,12 +81,10 @@ FocusableControl {
     anchors.verticalCenter: parent ? parent.verticalCenter : undefined
     anchors.horizontalCenter: parent ? parent.horizontalCenter : undefined
 
-    // height: parent ? parent.height : implicitHeight
-    // width: parent ? parent.width : implicitWidth
-    height: root.type === LayoutPanelItemType.PART ? 58 : 44
+    height: parent ? parent.height : implicitHeight
+    width: parent ? parent.width : implicitWidth
 
-
-    implicitHeight: root.type === LayoutPanelItemType.PART ? 38 : 34
+    implicitHeight: 38
     implicitWidth: 248
 
     Drag.keys: [ root.filterKey ]
@@ -253,14 +251,13 @@ FocusableControl {
         }
 
         Item {
-            id: rowItem
             Layout.fillWidth: true
-            Layout.leftMargin: 2 // 12 * styleData.depth
+            Layout.leftMargin: 12 * styleData.depth
+            height: childrenRect.height
 
             FlatButton {
                 id: expandButton
                 anchors.left: parent.left
-                anchors.verticalCenter: parent.verticalCenter
 
                 visible: root.isExpandable
                 width: expandButton.visible || styleData.depth !== 0 ? expandButton.implicitWidth : 0
@@ -291,34 +288,29 @@ FocusableControl {
             StyledIconLabel {
                 id: linkIcon
 
-                anchors.left: rowItem.left
-                anchors.verticalCenter: parent.verticalCenter
-
-                // toolTipTitle: "Linked staff"
-                // toolTipDescription: "Linked to 'name'"
-
+                anchors.left: expandButton.right
+                anchors.leftMargin: 4
+                anchors.verticalCenter: expandButton.verticalCenter
                 visible: root.isLinked
                 iconCode: IconCode.LINK
-                width: 30
+                opacity: model && model.itemRole.isVisible ? 1 : 0.75
             }
 
             StyledTextLabel {
                 id: titleLabel
 
-                // anchors.left: root.isLinked ? linkIcon.right : expandButton.right
-                anchors.left: expandButton.right
+                anchors.left: root.isLinked ? linkIcon.right : expandButton.right
                 anchors.leftMargin: 4
                 anchors.right: parent.right
                 anchors.rightMargin: 8
-                anchors.verticalCenter: parent.verticalCenter
+                anchors.verticalCenter: expandButton.verticalCenter
 
                 text: model ? model.itemRole.title : ""
                 horizontalAlignment: Text.AlignLeft
-                verticalAlignment: Text.AlignVCenter
-                opacity: model && model.itemRole.isVisible ? 1 : 0.70
+                opacity: model && model.itemRole.isVisible ? 1 : 0.75
 
                 font: {
-                    if (Boolean(model) && root.type === LayoutPanelItemType.PART) {
+                    if (Boolean(model) && root.type === LayoutPanelItemType.PART && model.itemRole.isVisible) {
                         return ui.theme.bodyBoldFont
                     }
 
@@ -331,6 +323,7 @@ FocusableControl {
             id: settingsButton
 
             Layout.alignment: Qt.AlignRight
+            Layout.preferredWidth: width
 
             visible: root.settingsAvailable
             enabled: root.visible && root.settingsEnabled
