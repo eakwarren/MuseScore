@@ -40,35 +40,57 @@ ListItemBlank {
     height: parent ? parent.height : implicitHeight
     width: parent ? parent.width : implicitWidth
 
-    implicitHeight: 38
+    implicitHeight: 34
     implicitWidth: 248
 
     background.border.width: 0
 
     RowLayout {
         anchors.fill: parent
-
-        // 70 = 32+2+32+4 for the buttons and spacing in LayoutPanelItemDelegate
-        // to make sure that the Add button aligns vertically with the text of the item above it
-        anchors.leftMargin: sideMargin + 70 + 12 * styleData.depth
-        spacing: 4
+        anchors.leftMargin: sideMargin + 68 // + 12 * styleData.depth
+        spacing: 8
 
         FlatButton {
             id: addButton
 
-            Layout.preferredWidth: 24
+            // override larger min width default from Muse properties
+            buttonType: FlatButton.Custom
+
             Layout.preferredHeight: 24
 
-            icon: IconCode.PLUS
+            // 25 = 3 x 8 margins + 1 to balance space in + icon
+            implicitWidth: plusIcon.implicitWidth + titleLabel.implicitWidth + 25
+
+
+            Layout.alignment: Qt.AlignVCenter
+
+            Item {
+
+                anchors.fill: parent
+                anchors.leftMargin: 8
+
+                StyledIconLabel {
+                    id: plusIcon
+
+                    iconCode: IconCode.PLUS
+                    anchors.verticalCenter: parent.verticalCenter
+                }
+
+                StyledTextLabel {
+                    id: titleLabel
+
+                    text: model ? model.itemRole.title : ""
+
+                    anchors.left: plusIcon.right
+                    anchors.leftMargin: 8
+                    anchors.verticalCenter: parent.verticalCenter
+
+                    horizontalAlignment: Text.AlignLeft
+                    verticalAlignment: Text.AlignVCenter
+                }
+            }
+
             onClicked: root.clicked(null)
-        }
-
-        StyledTextLabel {
-            id: titleLabel
-            Layout.fillWidth: true
-
-            text: model ? model.itemRole.title : ""
-            horizontalAlignment: Text.AlignLeft
         }
     }
 
