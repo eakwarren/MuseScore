@@ -645,10 +645,8 @@ static void drawDots(const BarLine* item, Painter* painter, double x)
         y1l = st->doty1() * spatium;
         y2l = st->doty2() * spatium;
 
-        //workaround to make several fonts work correctly with repeatDots
-        if (item->score()->engravingFont()->name() == "Emmentaler"
-            // above internal, builtin fonts, below external fonts
-            || item->score()->engravingFont()->name() == "Ekmelos") { // not the other ones from the Ekmelos family though (EkmelosXXedo)
+        // workaround to make external fonts work correctly with repeatDots
+        if (item->score()->engravingFont()->name() == "Ekmelos") { // not the other ones from the Ekmelos family though (EkmelosXXedo)
             double offset = 0.5 * item->style().spatium() * item->mag();
             y1l += offset;
             y2l += offset;
@@ -1826,7 +1824,7 @@ void TDraw::draw(const Harmony* item, Painter* painter)
 {
     TRACE_DRAW_ITEM;
 
-    const TextBase::LayoutData* ldata = item->ldata();
+    const Harmony::LayoutData* ldata = item->ldata();
 
     if (item->textList().empty()) {
         drawTextBase(item, painter);
@@ -1858,14 +1856,24 @@ void TDraw::draw(const Harmony* item, Painter* painter)
     Color color = item->textColor();
     painter->setPen(color);
     for (const TextSegment* ts : item->textList()) {
-        Font f(ts->m_font);
+        Font f(ts->font());
         f.setPointSizeF(f.pointSizeF() * MScore::pixelRatio);
 #ifndef Q_OS_MACOS
-        TextBase::drawTextWorkaround(painter, f, ts->pos(), ts->text);
+        TextBase::drawTextWorkaround(painter, f, ts->pos(), ts->text());
 #else
         painter->setFont(f);
-        painter->drawText(ts->pos(), ts->text);
+        painter->drawText(ts->pos(), ts->text());
 #endif
+    }
+
+    if (item->isPolychord()) {
+        Pen pen(painter->pen());
+        pen.setWidthF(item->style().styleS(Sid::polychordDividerThickness).toMM(item->spatium()));
+        pen.setColor(color);
+        painter->setPen(pen);
+        for (LineF line : ldata->polychordDividerLines.value()) {
+            painter->drawLine(line);
+        }
     }
 }
 
